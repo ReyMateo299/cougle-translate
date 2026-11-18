@@ -1,7 +1,7 @@
 variable "project" {
   description = "Project name, used as the first element of every resource name"
   type        = string
-  default     = "northstar"
+  default     = "cougle-translate"
 }
 
 variable "environment" {
