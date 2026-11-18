@@ -12,8 +12,8 @@ set -euo pipefail
 
 AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-STATE_BUCKET="northstar-tfstate-${AWS_ACCOUNT_ID}"
-LOCK_TABLE="northstar-tfstate-lock"
+STATE_BUCKET="cougle-translate-tfstate-${AWS_ACCOUNT_ID}"
+LOCK_TABLE="cougle-translate-tfstate-lock"
 
 echo "==> Bootstrap: Terraform remote state"
 echo "    Account ID : ${AWS_ACCOUNT_ID}"

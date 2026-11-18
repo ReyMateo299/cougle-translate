@@ -211,7 +211,7 @@ These estimates assume you shut down resources after each session and destroy wi
 |-----|-----------------|----------------|
 | 1 | VPC, S3, SageMaker Domain                     | ~$3–6 |
 | 2 | Glue ETL, S3, NAT Gateway (destroy after)     | ~$6–10 |
-| 3 | SageMaker Training (XGBoost), Bedrock (Haiku) | ~$12–18 |
+| 3 | SageMaker Training, Bedrock (Haiku) | ~$12–18 |
 | 4 | CodePipeline, CodeBuild, SageMaker Training   | ~$8–14 |
 | 5 | SageMaker Endpoint (brief), Secrets Manager   | ~$6–10 |
 | 6 | SageMaker Endpoint, CloudWatch, Evidently drift job | ~$10–16 |
@@ -232,8 +232,8 @@ bash scripts/bootstrap-state.sh
 ```
 
 This script:
-- Creates `s3://northstar-tfstate-{account-id}` with versioning and encryption
-- Creates DynamoDB table `northstar-tfstate-lock`
+- Creates `s3://cougle-translate-tfstate-{account-id}` with versioning and encryption
+- Creates DynamoDB table `cougle-translate-tfstate-lock`
 - Patches `backend.tf` with your real account ID
 - Is idempotent — safe to run multiple times
 

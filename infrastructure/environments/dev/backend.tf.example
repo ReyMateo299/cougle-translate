@@ -8,10 +8,10 @@
 
 terraform {
   backend "s3" {
-    bucket         = "northstar-tfstate-YOUR_ACCOUNT_ID"
+    bucket         = "cougle-translate-tfstate-YOUR_ACCOUNT_ID"
     key            = "dev/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "northstar-tfstate-lock"
+    dynamodb_table = "cougle-translate-tfstate-lock"
   }
 }

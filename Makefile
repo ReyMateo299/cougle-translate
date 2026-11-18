@@ -1,4 +1,4 @@
-# NorthStar AI Platform — Lab 1
+# COUGle Translate — Platform Infrastructure
 # Run from the repo root.
 #
 #   make local-validate   Task B5: apply vpc/storage/iam against LocalStack and
@@ -16,7 +16,7 @@ local-validate:
 	@docker compose up -d --wait
 	@mkdir -p docs
 	@set -e; { \
-	  echo "== NorthStar Lab 1 — LocalStack validation =="; \
+	  echo "== COUGle Translate — LocalStack validation =="; \
 	  echo "date: $$(date -u +%Y-%m-%dT%H:%M:%SZ)"; \
 	  echo; \
 	  echo "== terraform init =="; \
@@ -33,8 +33,8 @@ local-validate:
 	  echo "== awslocal s3 ls s3://$$BUCKET/ --recursive  (name from: terraform output s3_bucket_name) =="; \
 	  awslocal s3 ls s3://$$BUCKET/ --recursive; \
 	  echo; \
-	  echo "== awslocal iam list-roles (northstar*) =="; \
-	  awslocal iam list-roles --query 'Roles[?starts_with(RoleName, `northstar`)].RoleName'; \
+	  echo "== awslocal iam list-roles (cougle-translate*) =="; \
+	  awslocal iam list-roles --query 'Roles[?starts_with(RoleName, `cougle-translate`)].RoleName'; \
 	  echo; \
 	  echo "== awslocal ec2 describe-vpcs =="; \
 	  awslocal ec2 describe-vpcs --query 'Vpcs[*].{Id:VpcId,CIDR:CidrBlock}'; \

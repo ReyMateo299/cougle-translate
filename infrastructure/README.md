@@ -34,7 +34,7 @@ Each module contains **only** its designated resources — that is graded.
 **No hardcoded names.** The rubric runs:
 
 ```bash
-grep -rn '"northstar-dev"' infrastructure/modules/
+grep -rn '"cougle-translate-dev"' infrastructure/modules/
 ```
 
 and expects nothing. Build names from `var.project` and `var.environment`,
@@ -52,5 +52,5 @@ locals {
 }
 ```
 
-The same line yields `northstar-dev-data-<your account>` on AWS and
-`northstar-local-data-000000000000` on LocalStack with no special-casing.
+The same line yields `cougle-translate-dev-data-<your account>` on AWS and
+`cougle-translate-local-data-000000000000` on LocalStack with no special-casing.

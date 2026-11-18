@@ -11,8 +11,8 @@ terraform -chdir=infrastructure/environments/local init
 terraform -chdir=infrastructure/environments/local apply -auto-approve
 
 awslocal sts get-caller-identity
-awslocal s3 ls s3://northstar-local-data-000000000000/ --recursive
-awslocal iam list-roles --query 'Roles[?starts_with(RoleName, `northstar`)].RoleName'
+awslocal s3 ls s3://cougle-translate-local-data-000000000000/ --recursive
+awslocal iam list-roles --query 'Roles[?starts_with(RoleName, `cougle-translate`)].RoleName'
 awslocal ec2 describe-vpcs --query 'Vpcs[*].{Id:VpcId,CIDR:CidrBlock}'
 awslocal ec2 describe-subnets --query 'Subnets[*].{Id:SubnetId,AZ:AvailabilityZone,CIDR:CidrBlock}'
 ```
@@ -44,8 +44,8 @@ is why this environment omits the `sagemaker` module.
   `~/.aws` profile, so you cannot accidentally create resources in AWS.
 - `skip_*` flags turn off the provider's start-up checks that only make sense
   against real AWS.
-- `environment = "local"` so every resource name reads `northstar-local-*`
-  and can never collide with `northstar-dev-*`.
+- `environment = "local"` so every resource name reads `cougle-translate-local-*`
+  and can never collide with `cougle-translate-dev-*`.
 
 If `apply` fails here, your module code is wrong, not the emulator. Fix it
 before you spend money running it against AWS.
@@ -69,7 +69,7 @@ LocalStack it always returns account `000000000000`:
 }
 ```
 
-That account ID is why the bucket is `northstar-local-data-000000000000`. The
+That account ID is why the bucket is `cougle-translate-local-data-000000000000`. The
 storage module builds the name as
 `${project}-${environment}-data-${account_id}`; in `dev` the suffix is your
 real 12-digit account.
@@ -97,10 +97,10 @@ returns. Reading it left to right:
 | Piece | Meaning |
 |---|---|
 | `Roles` | the array in the response |
-| `[?starts_with(RoleName, `northstar`)]` | keep elements whose `RoleName` starts with `northstar` |
+| `[?starts_with(RoleName, `cougle-translate`)]` | keep elements whose `RoleName` starts with `cougle-translate` |
 | `.RoleName` | project just that field |
 
-Expected: `["northstar-local-MLEngineer"]`. The backticks around `northstar`
+Expected: `["cougle-translate-local-MLEngineer"]`. The backticks around `cougle-translate`
 are JMESPath string literals, which is why the whole expression sits in single
 quotes.
 
@@ -129,8 +129,8 @@ costs money and takes ten minutes to destroy.
 
 It does not prove your IAM policy grants the right permissions (LocalStack
 Community does not enforce IAM), that the SageMaker module works (not
-emulated), or that the resources behave under load. `scripts/verify-lab1.sh`
-against real AWS covers the first two.
+emulated), or that the resources behave under load. Check those against
+real AWS.
 
 ## Teardown
 
