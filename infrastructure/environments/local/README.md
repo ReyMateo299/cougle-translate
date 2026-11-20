@@ -1,7 +1,8 @@
 # What `make local-validate` is doing
 
-Task B5 hands you one command. Read this so you know what it verifies and what
-its output means. Later labs assume you can read this output without help.
+`make local-validate` runs the Terraform against LocalStack, a local AWS
+emulator, before anything is spent on real AWS. This explains what it verifies
+and how to read its output.
 
 ## The command sequence
 
@@ -17,8 +18,7 @@ awslocal ec2 describe-vpcs --query 'Vpcs[*].{Id:VpcId,CIDR:CidrBlock}'
 awslocal ec2 describe-subnets --query 'Subnets[*].{Id:SubnetId,AZ:AvailabilityZone,CIDR:CidrBlock}'
 ```
 
-Everything is written to `docs/lab1b-localstack-output.txt`. That file is your
-evidence for B5.
+Everything is written to `docs/localstack-validation.txt`.
 
 ## 1. Start LocalStack
 
@@ -118,7 +118,7 @@ Expected, for the VPC you built:
 
 You will also see a `172.31.0.0/16` VPC with six `/20` subnets, one per AZ.
 That is LocalStack emulating AWS's default VPC, which every real region also
-has. It is not yours and the rubric ignores it.
+has. It is not yours; ignore it.
 
 ## What passing proves, and what it does not
 

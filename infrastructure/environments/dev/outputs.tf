@@ -1,4 +1,4 @@
-# Surface what later labs need. Lab 2 reads these from `terraform output`.
+# Values other components read with `terraform output`.
 
 # output "vpc_id" {
 #   description = "ID of the VPC"

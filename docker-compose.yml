@@ -1,9 +1,9 @@
-# LocalStack for Task B5 — LocalStack Validation.
+# LocalStack for validating the Terraform modules locally (make local-validate).
 # Start:  docker compose up -d
 # Check:  docker compose ps        (STATUS should read "healthy")
 # Stop:   docker compose down
 #
-# Only the services Lab 1 uses are enabled. SageMaker is not in LocalStack
+# Only the services the Terraform modules use are enabled. SageMaker is not in LocalStack
 # Community, which is why environments/local omits the sagemaker module.
 services:
   localstack:

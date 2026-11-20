@@ -1,10 +1,10 @@
-# infrastructure/ — Lab 1 Part B Terraform skeleton
+# infrastructure/ — Terraform
 
-Skeleton for Task B1. **It is empty on purpose**: every file declares its
-variables and outputs, and `main.tf` lists the resources you owe, but no
-resources are written for you.
+Terraform for the COUGle Translate platform. The modules are scaffolded: every
+file declares its variables and outputs, and each `main.tf` lists the
+resources it owns, but the resources are not implemented yet.
 
-Verify it starts clean before you add anything:
+Check that it is clean before and after changes:
 
 ```bash
 cd environments/dev
@@ -12,8 +12,6 @@ terraform init
 terraform fmt -check -recursive ../..   # no output = pass
 terraform validate                      # exits 0
 ```
-
-Both must still pass when you submit — that is 5 of the 15 points in B1.
 
 ## Layout
 
@@ -25,24 +23,26 @@ modules/storage/    aws_s3_bucket + public_access_block, versioning,
 modules/iam/        one aws_iam_role (MLEngineer trust), one aws_iam_policy,
                     one aws_iam_role_policy_attachment
 modules/sagemaker/  aws_sagemaker_domain, aws_sagemaker_user_profile
+environments/dev/   real AWS (remote state in S3 + DynamoDB lock)
+environments/local/ LocalStack (vpc, storage, iam only); see its README
 ```
 
-Each module contains **only** its designated resources — that is graded.
+Keep each module to its own resources.
 
-## The rule that catches people
+## Naming
 
-**No hardcoded names.** The rubric runs:
+**No hardcoded names.** This should return nothing:
 
 ```bash
 grep -rn '"cougle-translate-dev"' infrastructure/modules/
 ```
 
-and expects nothing. Build names from `var.project` and `var.environment`,
-and give every variable a `description` — that is also graded.
+Build names from `var.project` and `var.environment`, and give every variable
+a `description`.
 
 The data bucket is the one name that also needs the account ID, because S3
-bucket names are global and thirty students deploy this same code. Read it
-from the caller inside `modules/storage`:
+bucket names are global across all AWS accounts. Read it from the caller
+inside `modules/storage`:
 
 ```hcl
 data "aws_caller_identity" "current" {}

@@ -1,5 +1,5 @@
 # ── modules/storage ──────────────────────────────────────────────────────────
-# Required resources (Task B1). Only these belong in this module:
+# Resources this module owns:
 #
 #   aws_s3_bucket
 #   aws_s3_bucket_public_access_block
@@ -7,7 +7,7 @@
 #   aws_s3_bucket_server_side_encryption_configuration
 #   aws_s3_object  x4                 the raw/ processed/ features/ artifacts/ prefixes
 #
-# ONE bucket with four prefixes, not four buckets. Later labs derive the name
+# ONE bucket with four prefixes, not four buckets. Other components derive the name
 # as ${project}-${environment}-data-${account_id}, so keep that shape.
 #
 # The four aws_s3_object resources create the prefixes. S3 has no real

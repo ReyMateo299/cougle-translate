@@ -1,15 +1,15 @@
 # ── modules/vpc ──────────────────────────────────────────────────────────────
-# Required resources (Task B1). Only these belong in this module:
+# Resources this module owns:
 #
 #   aws_vpc
-#   aws_subnet                      public only in Lab 1
+#   aws_subnet                      public only (no private subnets / NAT yet)
 #   aws_internet_gateway
 #   aws_route_table
 #   aws_route_table_association
 #   aws_security_group
 #
-# Name everything from var.project and var.environment. A hardcoded
-# project-environment literal anywhere under modules/ fails the rubric grep.
+# Name everything from var.project and var.environment. Never hardcode a
+# project-environment literal anywhere under modules/.
 #
 # Example of the naming pattern expected:
 #

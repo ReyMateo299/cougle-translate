@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-secrets.sh
 # Scans EVERY revision of this repository for committed AWS credentials.
-# The TA runs exactly this before grading. Exit 0 = clean, exit 1 = findings.
+# Run it before pushing. Exit 0 = clean, exit 1 = findings.
 #
 # What it looks for, across all commits on all branches and tags:
 #   - AWS access key IDs: AKIA followed by 16 uppercase letters/digits
@@ -11,8 +11,7 @@
 # What it deliberately ignores:
 #   - AKIAIOSFODNN7EXAMPLE, the placeholder key AWS uses in its own docs. It is
 #     what LocalStack returns from sts get-caller-identity, so it appears in
-#     docs/lab1b-localstack-output.txt and environments/local/README.md in
-#     every correct submission.
+#     docs/localstack-validation.txt and environments/local/README.md.
 #   - The word "AKIA" on its own (prose such as "starts with AKIA").
 #
 # Usage: bash scripts/check-secrets.sh   (from the repo root)
