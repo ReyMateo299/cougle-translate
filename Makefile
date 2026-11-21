@@ -1,14 +1,14 @@
 # COUGle Translate — Platform Infrastructure
 # Run from the repo root.
 #
-#   make local-validate   Task B5: apply vpc/storage/iam against LocalStack and
-#                         save the evidence to docs/lab1b-localstack-output.txt
+#   make local-validate   apply vpc/storage/iam against LocalStack and
+#                         save the output to docs/localstack-validation.txt
 #   make local-destroy    tear the LocalStack stack down
 #   make local-clean      also drop local state and LocalStack data
 
 INFRA_DIR   ?= infrastructure
 LOCAL_ENV    = $(INFRA_DIR)/environments/local
-LOCAL_OUT    = docs/lab1b-localstack-output.txt
+LOCAL_OUT    = docs/localstack-validation.txt
 
 .PHONY: local-validate local-destroy local-clean
 
@@ -43,7 +43,7 @@ local-validate:
 	  awslocal ec2 describe-subnets --query 'Subnets[*].{Id:SubnetId,AZ:AvailabilityZone,CIDR:CidrBlock}'; \
 	} 2>&1 | tee $(LOCAL_OUT)
 	@echo
-	@echo "Saved to $(LOCAL_OUT) — commit it."
+	@echo "Saved to $(LOCAL_OUT)."
 
 local-destroy:
 	terraform -chdir=$(LOCAL_ENV) destroy -auto-approve -input=false

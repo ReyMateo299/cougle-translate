@@ -1,4 +1,4 @@
-# Task B3 - Remote State.
+# Remote state.
 #
 # Copy this file to backend.tf. scripts/bootstrap-state.sh creates the state
 # bucket and lock table and replaces YOUR_ACCOUNT_ID below with your real

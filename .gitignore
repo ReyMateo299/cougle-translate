@@ -9,3 +9,15 @@ __pycache__/
 *.zip
 .aws/
 .localstack/
+
+# Python
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data and model weights live in S3, not git
+data/raw/
+data/processed/
+*.safetensors
+*.bin
+*.pt

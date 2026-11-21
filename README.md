@@ -30,7 +30,40 @@ Transformer-based translation models hallucinate, especially smaller models that
 |------|----------|
 | `infrastructure/` | Terraform modules (`vpc`, `storage`, `iam`, `sagemaker`) and the `dev` and `local` environments |
 | `docker-compose.yml`, `Makefile` | LocalStack validation (`make local-validate`) |
-| `scripts/` | Remote-state bootstrap, verification, and secret scanning |
-| `aws-account-setup.md` | AWS account, tooling, and cost-control setup |
+| `scripts/` | Remote-state bootstrap (`bootstrap-state.sh`) and secret scanning (`check-secrets.sh`) |
+| `data/` | EMEA dataset download and preprocessing (raw data lives in S3, not git) |
+| `models/translation/` | NLLB-200 translation |
+| `models/ner/` | NER entity tagging and preservation guardrail |
+| `models/confidence/` | Confidence-tier scoring and human-review routing |
+| `evaluation/` | Translation quality and hallucination evaluation |
+| `notebooks/` | Exploration |
+| `tests/` | pytest suite (`pytest` from the repo root) |
+| `.github/workflows/ci.yml` | CI: Terraform fmt/validate, secret scan, pytest |
 
 All resource names are prefixed with `cougle-translate` (`var.project`).
+
+## Getting started
+
+Prerequisites: Terraform >= 1.5, AWS CLI v2 configured for `us-east-1` (`aws sts get-caller-identity` should succeed), Docker, Python 3.11+, and `awslocal` (`pip install awscli-local`) for LocalStack.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+```
+
+```bash
+# Validate the modules locally against LocalStack (free)
+make local-validate
+
+# One-time per AWS account: create the remote-state bucket and lock table
+bash scripts/bootstrap-state.sh
+
+# Deploy to AWS
+cd infrastructure/environments/dev
+terraform init
+terraform plan
+terraform apply
+```
+
+Run `terraform destroy` when you're done working. SageMaker endpoints and Studio kernels bill by the hour. Run `bash scripts/check-secrets.sh` before pushing.
