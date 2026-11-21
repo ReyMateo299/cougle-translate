@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive infrastructure
+
+      # -backend=false: validate needs providers, not the remote state bucket,
+      # so CI never needs AWS credentials.
+      - name: validate environments/dev
+        run: |
+          terraform -chdir=infrastructure/environments/dev init -backend=false -input=false
+          terraform -chdir=infrastructure/environments/dev validate
+
+      - name: validate environments/local
+        run: |
+          terraform -chdir=infrastructure/environments/local init -backend=false -input=false
+          terraform -chdir=infrastructure/environments/local validate
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # check-secrets.sh scans every revision
+      - run: bash scripts/check-secrets.sh
+
+  python:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      # Exit code 5 means "no tests collected". Treat it as a pass until the
+      # first tests land in tests/.
+      - run: pytest || [ $? -eq 5 ]

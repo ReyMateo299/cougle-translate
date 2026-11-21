@@ -7,8 +7,8 @@
 # A brand-new AWS account has no service-linked role for Studio, and the
 # Domain fails to create with a service-linked role error. Fix it once in the
 # console (IAM -> Roles -> Create Role -> AWS Service -> SageMaker -> SageMaker
-# Studio) and re-apply. See "First-Use: SageMaker Service-Linked Role" in
-# aws-account-setup.md.
+# Studio) and re-apply. This creates AWSServiceRoleForAmazonSageMakerNotebooks;
+# you only need to do it once per account.
 #
 # The Domain is also the slowest resource here by a wide margin -- several
 # minutes to create and to delete. Factor that into apply/destroy timings.
