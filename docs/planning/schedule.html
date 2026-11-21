@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html,body{margin:0}</style>
+</head>
+<body>
+<title>COUGle Translate Schedule</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: chart-first planning sheet. Header + owner key, then a day-grid Gantt in its own scroller, then requirement coverage. */
+:root {
+  --bg: #f6f8f9;
+  --surface: #ffffff;
+  --fg: #18242b;
+  --muted: #5b6b74;
+  --line: #dfe5e8;
+  --line-strong: #c4ced3;
+  --weekend: #eef2f4;
+  --holiday: #fbefe3;
+  --accent: #0b5d7a;
+  --today: #c2410c;
+  --matt: #2f6fd1;
+  --andrew: #c27a0e;
+  --santiago: #0f8a72;
+  --suzana: #8a4fc7;
+  --claude: #c2456f;
+  --all: #4b5a63;
+  --f-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --day: 34px;
+  --label: 300px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181c; --surface: #172127; --fg: #e3eaed; --muted: #93a3ab;
+    --line: #26333a; --line-strong: #34444c; --weekend: #141d22; --holiday: #2a2119;
+    --accent: #5fb7d6; --today: #fb8a4c;
+    --matt: #6c9ef0; --andrew: #e0a23a; --santiago: #35bfa0; --suzana: #b48ae8; --claude: #e47a9d; --all: #8d9da6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181c; --surface: #172127; --fg: #e3eaed; --muted: #93a3ab;
+  --line: #26333a; --line-strong: #34444c; --weekend: #141d22; --holiday: #2a2119;
+  --accent: #5fb7d6; --today: #fb8a4c;
+  --matt: #6c9ef0; --andrew: #e0a23a; --santiago: #35bfa0; --suzana: #b48ae8; --claude: #e47a9d; --all: #8d9da6;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 14px; line-height: 1.5;
+}
+.wrap {
+  max-width: 1340px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px;
+  display: grid; gap: 28px;
+}
+header { display: grid; gap: 10px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+}
+h1 {
+  font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 38px); line-height: 1.12;
+  margin: 0; text-wrap: balance;
+}
+.sub { color: var(--muted); max-width: 70ch; margin: 0; }
+.keydates { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 4px; font-size: 13px; }
+.keydates span { display: inline-flex; gap: 8px; align-items: baseline; }
+.keydates b { font-family: var(--f-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.toolbar .lbl { font-size: 12px; color: var(--muted); margin-right: 4px; }
+.chip {
+  font: 500 13px/1 var(--f-body); color: var(--fg);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer;
+}
+.chip:hover { border-color: var(--muted); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip[aria-pressed="true"] { border-color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
+.chip i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); display: block; }
+.chip small { color: var(--muted); font-weight: 400; }
+
+.scroller {
+  overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+.gantt { min-width: calc(var(--label) + 29 * var(--day)); font-size: 13px; }
+.row {
+  display: grid; grid-template-columns: var(--label) repeat(29, var(--day));
+  position: relative; min-height: 34px; align-items: center;
+}
+.row > .name {
+  grid-column: 1; grid-row: 1; position: sticky; left: 0; z-index: 3;
+  background: var(--surface); border-right: 1px solid var(--line);
+  padding: 6px 12px; height: 100%; display: flex; flex-direction: column; justify-content: center;
+  min-width: 0;
+}
+.row > .name .t { overflow-wrap: anywhere; }
+.row > .name .o { font-size: 11.5px; color: var(--muted); }
+.st { display: inline-block; font: 500 10px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; padding: 3px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+.st.done { background: color-mix(in srgb, var(--santiago) 18%, transparent); color: var(--santiago); }
+.st.wip { background: color-mix(in srgb, var(--andrew) 20%, transparent); color: var(--andrew); }
+.bar.done { background-image: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--surface) 28%, transparent) 5px 7px); }
+.status { font-size: 13px; color: var(--muted); }
+.status b { color: var(--fg); font-weight: 600; }
+.status code { font-family: var(--f-mono); font-size: 12px; }
+.cell { grid-row: 1; height: 100%; border-left: 1px solid var(--line); }
+.cell.we { background: var(--weekend); }
+.cell.hol { background: var(--holiday); }
+.row + .row { border-top: 1px solid var(--line); }
+
+.head { position: sticky; top: 0; z-index: 4; background: var(--surface); }
+.head .name { font-family: var(--f-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; justify-content: flex-end; }
+.head .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--f-mono); font-variant-numeric: tabular-nums; padding: 4px 0; }
+.head .cell .dow { font-size: 10px; color: var(--muted); }
+.head .cell .dn { font-size: 12px; }
+.head .cell .mo { font-size: 10px; color: var(--accent); font-weight: 500; height: 14px; }
+.head .cell.mark .dn { color: var(--today); font-weight: 500; }
+
+.group > .name {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  padding-top: 14px;
+}
+.group { min-height: 36px; }
+
+.bar {
+  grid-row: 1; z-index: 2; height: 18px; border-radius: 5px; margin: 0 3px;
+  background: var(--c);
+  display: flex; align-items: center; padding: 0 6px; overflow: hidden;
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--surface); white-space: nowrap;
+}
+.bar.ghost { background: color-mix(in srgb, var(--c) 22%, transparent); outline: 1.5px solid var(--c); outline-offset: -1.5px; color: var(--fg); }
+.ms {
+  grid-row: 1; z-index: 2; justify-self: center; width: 14px; height: 14px; transform: rotate(45deg);
+  background: var(--c); border-radius: 2px;
+}
+.ms.big { width: 18px; height: 18px; background: var(--today); }
+.vline {
+  position: absolute; top: 0; bottom: 0; width: 2px; z-index: 1; pointer-events: none;
+  background: var(--today); opacity: .75;
+}
+.vline.today { opacity: .5; background: repeating-linear-gradient(var(--today) 0 4px, transparent 4px 8px); }
+
+.task { transition: opacity .15s; }
+.gantt.filtering .task:not(.hit) { opacity: .22; }
+
+.legend2 { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.legend2 span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 10px; border-radius: 2px; display: inline-block; border: 1px solid var(--line-strong); }
+
+section h2 { font-family: var(--f-display); font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+section > p { margin: 0 0 14px; color: var(--muted); max-width: 72ch; }
+.req { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; }
+th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; font-family: var(--f-mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.when { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; margin-right: 10px; white-space: nowrap; }
+.pill i { width: 8px; height: 8px; border-radius: 2px; background: var(--c); display: block; }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 32px; }
+.notes p { margin: 0; color: var(--muted); }
+.notes b { color: var(--fg); font-weight: 600; }
+
+@media (max-width: 640px) {
+  :root { --label: 190px; --day: 30px; }
+  .row > .name .o { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .task { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">CS 401R · Engineering the AI Enterprise · Final project</div>
+    <h1>COUGle Translate: Zero-Hallucination Clinical Translation Engine</h1>
+    <p class="sub">Four-week plan from kickoff to submission. NLLB-200 translation with an NER entity guardrail and confidence-tiered human review, trained on the OPUS EMEA corpus, for Intermountain Health discharge instructions.</p>
+    <div class="keydates">
+      <span>Kickoff <b>Fri Nov 20</b></span>
+      <span>Code freeze <b>Mon Dec 14</b></span>
+      <span>Final presentation <b>Wed Dec 16</b></span>
+      <span>GitHub submission <b>Thu Dec 17, EOD</b></span>
+    </div>
+    <p class="status" id="status"></p>
+  </header>
+
+  <div class="toolbar" id="filters" role="group" aria-label="Highlight an owner">
+    <span class="lbl">Highlight owner</span>
+  </div>
+
+  <div class="scroller">
+    <div class="gantt" id="gantt"></div>
+  </div>
+
+  <div class="legend2">
+    <span><i class="sw" style="background:var(--weekend)"></i>Weekend</span>
+    <span><i class="sw" style="background:var(--holiday)"></i>Thanksgiving break</span>
+    <span><i class="ms" style="--c:var(--all);width:10px;height:10px;display:inline-block"></i>Milestone</span>
+    <span><i class="sw" style="background:transparent;border:1.5px solid var(--andrew)"></i>Outlined bar = shared with a second owner</span>
+    <span><i class="sw" style="background:var(--today);height:2px;border:0"></i>Presentation / submission</span>
+  </div>
+
+  <section>
+    <h2>Requirement coverage</h2>
+    <p>Each minimum requirement from the assignment, the tasks that deliver it, and when it should be done.</p>
+    <div class="req"><table id="req">
+      <thead><tr><th>Requirement</th><th>Delivered by</th><th>Owner</th><th>Done by</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Assumptions</h2>
+    <div class="notes">
+      <p><b>AWS stack.</b> Confirmed by the repo's Terraform modules. SageMaker Pipelines for prep, train, evaluate and register; SageMaker Model Registry and endpoints; API Gateway in front; SageMaker Model Monitor with CloudWatch. All provisioned with Terraform.</p>
+      <p><b>Unique service.</b> The NER entity guardrail plus confidence tiers that route low-confidence translations to a human reviewer. This is the piece that goes beyond class material.</p>
+      <p><b>Thanksgiving.</b> Nov 26–27 has no work planned. Research and infrastructure tasks that span it have slack built in.</p>
+      <p><b>Front end.</b> Built with Claude as the coding assistant. Someone on the team still owns review and integration; the chart lists it under “Front end”.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const OWNERS = {
+    matt:     { name: "Matt",      role: "Data engineer, architecture" },
+    andrew:   { name: "Andrew",    role: "DevOps, Terraform" },
+    santiago: { name: "Santiago",  role: "ML engineer, training" },
+    suzana:   { name: "Suzana",    role: "ML engineer, guardrails, monitoring" },
+    claude:   { name: "Front end", role: "Claude-assisted" },
+    all:      { name: "Whole team", role: "" }
+  };
+
+  // Dates as "MM-DD" in 2026. Range Nov 20 – Dec 18 = 29 days.
+  const T = [
+    { g: "Plan and research" },
+    { n: "Kickoff, repo scaffold, roles", o: ["all"], s: "11-20", e: "11-20", st: "done" },
+    { n: "Architecture design and AWS service map", o: ["matt"], s: "11-20", e: "11-25" },
+    { n: "Model research: NLLB-200 and alternatives on SageMaker", o: ["santiago"], s: "11-20", e: "11-25" },
+    { n: "Clinical NER research (scispaCy, Comprehend Medical)", o: ["suzana"], s: "11-21", e: "11-25" },
+    { n: "Architecture sign-off", o: ["all"], s: "11-25", ms: true },
+
+    { g: "Data" },
+    { n: "Ingest EMEA corpus from OPUS into S3", o: ["matt"], s: "11-23", e: "11-30" },
+    { n: "Data prep: clean, align, train/val/test split", o: ["matt"], s: "11-30", e: "12-04" },
+    { n: "Feature store: entity glossary and translation memory", o: ["matt"], s: "12-02", e: "12-08" },
+
+    { g: "Infrastructure" },
+    { n: "Terraform: S3, IAM, VPC, SageMaker domain", o: ["andrew"], s: "11-20", e: "12-02", st: "wip", note: "modules scaffolded, resources not implemented" },
+    { n: "CI: Terraform validate, secret scan, pytest", o: ["matt"], s: "11-20", e: "11-20", st: "done" },
+    { n: "CD: deploy infrastructure and pipeline from main", o: ["andrew"], s: "11-30", e: "12-04" },
+    { n: "SageMaker Pipeline: prep → train → evaluate → register", o: ["andrew", "santiago"], s: "12-02", e: "12-09" },
+    { n: "Model Registry and endpoint deployment", o: ["andrew"], s: "12-07", e: "12-10" },
+    { n: "API Gateway and Lambda in front of the endpoint", o: ["andrew"], s: "12-08", e: "12-11" },
+
+    { g: "Model and guardrails" },
+    { n: "Baseline NLLB-200 eval (BLEU, chrF, COMET)", o: ["santiago"], s: "11-30", e: "12-03" },
+    { n: "Fine-tune NLLB-200 on EMEA (LoRA)", o: ["santiago"], s: "12-02", e: "12-09" },
+    { n: "Evaluation step and promotion threshold", o: ["santiago"], s: "12-08", e: "12-10" },
+    { n: "NER entity-preservation guardrail", o: ["suzana"], s: "11-30", e: "12-07" },
+    { n: "Confidence tiers and human-review routing", o: ["suzana"], s: "12-04", e: "12-10" },
+
+    { g: "Monitoring" },
+    { n: "Model Monitor, CloudWatch dashboards, drift alerts", o: ["suzana"], s: "12-09", e: "12-12" },
+    { n: "Log flagged translations for the review loop", o: ["suzana", "matt"], s: "12-10", e: "12-12" },
+
+    { g: "Application" },
+    { n: "Front end: discharge-note translator UI", o: ["claude"], s: "12-02", e: "12-11" },
+    { n: "End-to-end integration and bug bash", o: ["all"], s: "12-10", e: "12-13" },
+    { n: "Code freeze", o: ["all"], s: "12-14", ms: true },
+
+    { g: "Deliverables" },
+    { n: "Scaling architecture and price estimates", o: ["matt", "andrew"], s: "12-08", e: "12-14" },
+    { n: "Demo script with sample discharge notes", o: ["suzana"], s: "12-10", e: "12-14" },
+    { n: "Presentation slides", o: ["all"], s: "12-11", e: "12-15" },
+    { n: "3–5 min explainer video for non-ML CS students", o: ["santiago"], s: "12-11", e: "12-15" },
+    { n: "Dry run", o: ["all"], s: "12-15", ms: true },
+    { n: "Final presentation", o: ["all"], s: "12-16", ms: true, big: true },
+    { n: "Abstract (½ page)", o: ["matt"], s: "12-14", e: "12-16" },
+    { n: "Code cleanup, docstrings, README", o: ["andrew"], s: "12-14", e: "12-17" },
+    { n: "Submit everything to GitHub", o: ["all"], s: "12-17", ms: true, big: true },
+    { n: "Tear down AWS resources", o: ["andrew"], s: "12-18", e: "12-18" }
+  ];
+
+  const DAYS = 29;
+  const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+  const MON = { "11": "Nov", "12": "Dec" };
+  function idx(md) { const [m, d] = md.split("-").map(Number); return m === 11 ? d - 20 : 10 + d; }
+  function dateOf(i) { return i <= 10 ? { m: 11, d: 20 + i } : { m: 12, d: i - 10 }; }
+  function dow(i) { return (5 + i) % 7; } // Nov 20 2026 is a Friday
+  function isWE(i) { const w = dow(i); return w === 0 || w === 6; }
+  function isHol(i) { return i === 6 || i === 7; } // Nov 26–27
+  function fmt(md) { const [m, d] = md.split("-"); return MON[m] + " " + Number(d); }
+  function ownerNames(o) { return o.map(k => OWNERS[k].name).join(" + "); }
+
+  const g = document.getElementById("gantt");
+  const frag = document.createDocumentFragment();
+
+  function cells(row, header) {
+    for (let i = 0; i < DAYS; i++) {
+      const c = document.createElement("div");
+      c.className = "cell" + (isHol(i) ? " hol" : isWE(i) ? " we" : "");
+      c.style.gridColumn = String(i + 2);
+      if (header) {
+        const dt = dateOf(i);
+        const first = i === 0 || dt.d === 1;
+        if (i === idx("12-16") || i === idx("12-17")) c.classList.add("mark");
+        c.innerHTML = '<span class="mo">' + (first ? MON[String(dt.m)] : "") + '</span><span class="dow">' + DOW[dow(i)] + '</span><span class="dn">' + dt.d + "</span>";
+      }
+      row.appendChild(c);
+    }
+  }
+
+  const head = document.createElement("div");
+  head.className = "row head";
+  head.innerHTML = '<div class="name">2026</div>';
+  cells(head, true);
+  frag.appendChild(head);
+
+  T.forEach(t => {
+    const r = document.createElement("div");
+    if (t.g) {
+      r.className = "row group";
+      r.innerHTML = '<div class="name">' + t.g + "</div>";
+      cells(r);
+      frag.appendChild(r);
+      return;
+    }
+    r.className = "row task";
+    r.dataset.owners = t.o.join(" ");
+    const nm = document.createElement("div");
+    nm.className = "name";
+    const when = t.ms || t.s === t.e ? fmt(t.s) : fmt(t.s) + " – " + fmt(t.e);
+    nm.innerHTML = '<span class="t"></span><span class="o"></span>';
+    nm.querySelector(".t").textContent = t.n;
+    if (t.st) {
+      const p = document.createElement("span");
+      p.className = "st " + t.st;
+      p.textContent = t.st === "done" ? "Done" : "In progress";
+      nm.querySelector(".t").appendChild(p);
+    }
+    nm.querySelector(".o").textContent = ownerNames(t.o) + " · " + when + (t.note ? " · " + t.note : "");
+    r.appendChild(nm);
+    cells(r);
+    const s = idx(t.s);
+    const c = "var(--" + t.o[0] + ")";
+    if (t.ms) {
+      const m = document.createElement("div");
+      m.className = "ms" + (t.big ? " big" : "");
+      m.style.setProperty("--c", c);
+      m.style.gridColumn = String(s + 2);
+      m.title = t.n + " · " + when;
+      r.appendChild(m);
+    } else {
+      const e = idx(t.e);
+      const b = document.createElement("div");
+      b.className = "bar" + (t.o.length > 1 ? " ghost" : "") + (t.st === "done" ? " done" : "");
+      b.style.setProperty("--c", c);
+      b.style.gridColumn = (s + 2) + " / " + (e + 3);
+      b.title = t.n + "\n" + ownerNames(t.o) + " · " + when;
+      const len = e - s + 1;
+      if (len >= 3) b.textContent = (t.o.length > 1 ? ownerNames(t.o) : OWNERS[t.o[0]].name);
+      r.appendChild(b);
+    }
+    frag.appendChild(r);
+  });
+  g.appendChild(frag);
+
+  const tasks = T.filter(t => !t.g && !t.ms);
+  const nDone = tasks.filter(t => t.st === "done").length;
+  const nWip = tasks.filter(t => t.st === "wip").length;
+  document.getElementById("status").innerHTML =
+    "Status as of Nov 20, from the repo at <code>34febd8</code>: <b>" + nDone + " done</b>, <b>" + nWip + " in progress</b>, " +
+    (tasks.length - nDone - nWip) + " not started.";
+
+  // Vertical lines: presentation, submission, today (if in range)
+  function vline(i, cls) {
+    const v = document.createElement("div");
+    v.className = "vline " + (cls || "");
+    v.style.left = "calc(var(--label) + " + i + " * var(--day) + var(--day) / 2 - 1px)";
+    g.appendChild(v);
+  }
+  g.style.position = "relative";
+  vline(idx("12-16"));
+  vline(idx("12-17"));
+  const now = new Date();
+  if (now.getFullYear() === 2026) {
+    const m = now.getMonth() + 1, d = now.getDate();
+    if ((m === 11 && d >= 20) || (m === 12 && d <= 18)) vline(idx(m + "-" + d), "today");
+  }
+
+  // Owner filter chips
+  const bar = document.getElementById("filters");
+  let active = null;
+  Object.keys(OWNERS).forEach(k => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.id = "f-" + k;
+    b.setAttribute("aria-pressed", "false");
+    b.style.setProperty("--c", "var(--" + k + ")");
+    b.innerHTML = "<i></i>" + OWNERS[k].name + (OWNERS[k].role ? " <small>" + OWNERS[k].role + "</small>" : "");
+    b.addEventListener("click", () => {
+      active = active === k ? null : k;
+      bar.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c.id === "f-" + active)));
+      g.classList.toggle("filtering", !!active);
+      g.querySelectorAll(".task").forEach(r => {
+        const os = r.dataset.owners.split(" ");
+        r.classList.toggle("hit", !!active && (os.includes(active) || os.includes("all")));
+      });
+    });
+    bar.appendChild(b);
+  });
+
+  // Requirement coverage
+  const REQ = [
+    ["End-to-end system, data ingest through monitoring", "Integration and bug bash", ["all"], "12-13"],
+    ["Pipeline: data preparation", "Data prep pipeline, SageMaker Pipeline prep step", ["matt"], "12-04"],
+    ["Pipeline: training and evaluation", "Fine-tune NLLB-200, evaluation step and promotion threshold", ["santiago"], "12-10"],
+    ["Pipeline: deployment", "Model Registry and endpoint deployment", ["andrew"], "12-10"],
+    ["Model Registry", "SageMaker Model Registry", ["andrew"], "12-10"],
+    ["Feature store or vector store", "Entity glossary and translation memory", ["matt"], "12-08"],
+    ["Model monitoring", "Model Monitor, CloudWatch, drift alerts", ["suzana"], "12-12"],
+    ["API Gateway", "API Gateway and Lambda", ["andrew"], "12-11"],
+    ["Scaling architecture (documented)", "Scaling architecture and price estimates", ["matt", "andrew"], "12-14"],
+    ["Unique service beyond class", "NER guardrail with confidence-tiered human review", ["suzana"], "12-10"],
+    ["Demo app, UI and demo script", "Front end UI, demo script", ["claude", "suzana"], "12-14"],
+    ["Presentation (Dec 16)", "Slides, dry run", ["all"], "12-16"],
+    ["3–5 min video", "Explainer video", ["santiago"], "12-15"],
+    ["Price estimates, abstract, documented code in GitHub", "Price estimates, abstract, README, submission", ["matt", "andrew"], "12-17"]
+  ];
+  const tb = document.querySelector("#req tbody");
+  REQ.forEach(([r, by, o, d]) => {
+    const tr = document.createElement("tr");
+    const pills = o.map(k => '<span class="pill" style="--c:var(--' + k + ')"><i></i>' + OWNERS[k].name + "</span>").join("");
+    tr.innerHTML = "<td></td><td></td><td>" + pills + '</td><td class="when">' + fmt(d) + "</td>";
+    tr.children[0].textContent = r;
+    tr.children[1].textContent = by;
+    tb.appendChild(tr);
+  });
+})();
+</script>
+
+</body>
+</html>
